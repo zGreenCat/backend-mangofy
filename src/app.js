@@ -4,14 +4,14 @@ const { initDb } = require("./config/db");
 
 const authRoutes = require("./modules/auth");
 const audioRoutes = require("./modules/audio");
+const { authMiddleware } = require("./core/authMiddleware"); 
 
 const app = express();
 app.use(express.json());
 
 // Rutas
 app.use("/api/auth", authRoutes);
-app.use("/api/audio", audioRoutes);
-
+app.use("/api/audios", authMiddleware, audioRoutes);
 // Errores
 app.use(errorMiddleware);
 

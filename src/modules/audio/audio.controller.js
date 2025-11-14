@@ -21,4 +21,16 @@ async function play(req, res, next) {
   } catch (e) { next(e); }
 }
 
-module.exports = { list, signature, play };
+async function create(req, res, next) {
+  try {
+    // body esperado: { title, artist?, public_id, format, duration_sec?, bytes?, visibility? }
+    const dto = req.body || {};
+    if (!dto.title || !dto.public_id || !dto.format) {
+      return res.status(400).json({ error: "INVALID_BODY" });
+    }
+    const out = await svc.createFromUpload(dto, req.user?.id); // si usas authMiddleware
+    res.status(201).json(out);
+  } catch (e) { next(e); }
+}
+
+module.exports = { list, signature, play, create};

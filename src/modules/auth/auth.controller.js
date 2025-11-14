@@ -21,4 +21,29 @@ async function me(_req, res, next) {
   } catch (e) { next(e); }
 }
 
-module.exports = { login, register, me };
+async function refresh(req, res, next) {
+  try {
+    const { refreshToken } = req.body;
+    if (!refreshToken) throw new HttpError(400, "NO_REFRESH_TOKEN");
+
+    const payload = tokens.verifyRefresh(refreshToken); // { sub, jti, iat, exp }
+    const valid = await repo.isRefreshValid(payload.jti, payload.sub);
+    if (!valid) throw new HttpError(401, "INVALID_REFRESH");
+
+    const accessToken = tokens.signAccess(payload.sub);
+    res.json({ accessToken });
+  } catch (e) { next(e); }
+}
+
+async function logout(req, res, next) {
+  try {
+    const { refreshToken } = req.body;
+    if (!refreshToken) return res.status(204).end();
+
+    const { jti } = tokens.verifyRefresh(refreshToken);
+    await repo.revokeRefreshToken(jti);
+    res.status(204).end();
+  } catch (e) { next(e); }
+}
+
+module.exports = { login, register, me, refresh, logout };
