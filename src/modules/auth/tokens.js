@@ -1,7 +1,7 @@
 const jwt = require("jsonwebtoken");
 const {v4:uuid} = require("uuid");
-const { env } = require("../env");
-const { storeRefresh } = require("../db");
+const { env } = require("../../env");
+const { storeRefresh } = require("../../db");
 
 function signAccessToken(payload){
     return jwt.sign(payload, env.JWT_ACCESS_SECRET, {expiresIn: env.ACCESS_TTL})
