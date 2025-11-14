@@ -1,14 +1,18 @@
-// Stub en memoria
-const _users = [];
+const { v4: uuid } = require("uuid");
+const User = require("./models/user.model");
+const RefreshToken = require("./models/refreshToken.model");
 
-async function findByEmail(email) {
-  return _users.find(u => u.email === email) || null;
+async function createUser({ email, password, name }) {
+  const id = uuid();
+  const u = await User.create({ id, email, password, name: name || null });
+  return u.get({ plain: true });
 }
-
-async function create({ email, password }) {
-  const u = { id: String(_users.length + 1), email, password };
-  _users.push(u);
-  return u;
+async function findUserByEmail(email, withPassword=false) {
+  const scope = withPassword ? "withPassword" : null;
+  const u = await User.scope(scope).findOne({ where: { email } });
+  return u && u.get({ plain: true });
 }
-
-module.exports = { findByEmail, create };
+async function createRefreshToken({ id, userId }) {
+  await RefreshToken.create({ id, userId, revoked: false, createdAt: Date.now() });
+}
+module.exports = { createUser, findUserByEmail, createRefreshToken };

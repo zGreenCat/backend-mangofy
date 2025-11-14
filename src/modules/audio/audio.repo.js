@@ -1,33 +1,15 @@
-// Reemplaza con tu acceso real a DB (Prisma/Sequelize/Knex).
-// Aquí dejo un stub en memoria para que compile.
+const { v4: uuid } = require("uuid");
+const { Op } = require("sequelize");
+const Audio = require("./models/audio.model");
 
-const _data = [
-  // Ejemplo:
-  // {
-  //   id: "a1",
-  //   title: "Demo",
-  //   public_id: "audios/demo_123",
-  //   format: "mp3",
-  //   duration_sec: 42.7,
-  //   bytes: 123456,
-  //   visibility: "public"
-  // }
-];
-
-async function list() {
-  // En producción: SELECT columnas necesarias
-  return _data.map(a => ({
-    id: a.id,
-    title: a.title,
-    format: a.format,
-    duration_sec: a.duration_sec,
-    visibility: a.visibility,
-  }));
+async function createAudio(data, t) {
+  const id = uuid();
+  const row = await Audio.create({ id, ...data }, { transaction: t });
+  return row.get({ plain: true });
 }
-
-async function byId(id) {
-  // En producción: SELECT * FROM audio WHERE id = $1
-  return _data.find(a => a.id === id) || null;
+async function listAudios({ q, limit=20, offset=0 }) {
+  const where = q ? { title: { [Op.like]: `%${q}%` } } : undefined;
+  const { count, rows } = await Audio.findAndCountAll({ where, limit, offset, order: [["createdAt","DESC"]] });
+  return { count, items: rows.map(r => r.get({ plain: true })) };
 }
-
-module.exports = { list, byId };
+module.exports = { createAudio, listAudios };

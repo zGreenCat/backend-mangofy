@@ -1,21 +1,21 @@
 const express = require("express");
-const cors = require("cors");
-const helmet = require("helmet");
-const { env } = require("./env");
-const { authRouter } = require("./modules/auth/routes");
-const { requireAuth } = require("./modules/auth/middleware");
-const {audioRouter} = require("./audio/audio.routes");
+const { errorMiddleware } = require("./core/errorMiddleware");
+const { initDb } = require("./config/db");
+
+const authRoutes = require("./modules/auth");
+const audioRoutes = require("./modules/audio");
+
 const app = express();
-app.use(helmet());
-app.use(cors({ origin: env.CORS_ORIGIN, credentials: true }));
 app.use(express.json());
 
-app.use("/auth", authRouter);
-app.use("/api/audios", audioRouter);
-app.get("/me", requireAuth, (req, res) => {
-  return res.json({ me: req.user });
-});
+// Rutas
+app.use("/api/auth", authRoutes);
+app.use("/api/audio", audioRoutes);
 
-app.listen(env.PORT, () => {
-  console.log(`API on http://localhost:${env.PORT}`);
-});
+// Errores
+app.use(errorMiddleware);
+
+// Init DB al levantar (si no usas migraciones CLI)
+initDb().catch(console.error);
+
+module.exports = app;

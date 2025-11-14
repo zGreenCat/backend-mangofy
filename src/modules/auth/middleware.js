@@ -1,15 +1,18 @@
-const { verifyAccess} = require("./tokens")
+// src/modules/auth/middleware.js
+const jwt = require("jsonwebtoken");
+const env = require("../../config/env");
 
-function requireAuth(req,res,next){
-    const hdr = req.headers.authorization || "";
-    const token = hdr.startsWith("Bearer ") ? hdr.slice(7) : null;
-    if (!token) return res.status(401).json({ error: "Unauthorized" });
-    try{
-        const payload = verifyAccess(token);
-        req.user = { id: payload.sub, email: payload.email};
-    }catch{
-        return res.status(401).json({ error: "Unauthorized" });
-    }
+function authMiddleware(req, res, next) {
+  const h = req.headers.authorization || "";
+  const token = h.startsWith("Bearer ") ? h.slice(7) : null;
+  if (!token) return res.status(401).json({ error: "NO_TOKEN" });
+
+  try {
+    const payload = jwt.verify(token, env.JWT_ACCESS_SECRET);
+    req.user = { id: payload.sub };
+    next();
+  } catch {
+    return res.status(401).json({ error: "INVALID_TOKEN" });
+  }
 }
-
-module.exports = { requireAuth };
+module.exports = { authMiddleware };

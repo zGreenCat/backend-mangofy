@@ -8,10 +8,21 @@ async function login(email, password) {
   return { token: "fake.jwt.token", user: { id: user.id, email: user.email } };
 }
 
-async function register(data) {
-  // TODO: validación
-  const user = await repo.create(data);
-  return { id: user.id, email: user.email };
+async function register({ email, password, name }) {
+  const exists = await repo.findUserByEmail(email);
+  if (exists) throw new HttpError(409, "EMAIL_IN_USE");
+  const hash = await bcrypt.hash(password, 10);
+  return repo.createUser({ email, password: hash, name });
 }
 
-module.exports = { login, register };
+async function validateUser(email, password) {
+  const user = await repo.findUserByEmail(email, true); // withPassword
+  if (!user) return null;
+  const ok = await bcrypt.compare(password, user.password);
+  if (!ok) return null;
+  // devuelve sin password
+  return { id: user.id, email: user.email, name: user.name };
+}
+  
+
+module.exports = { login, register, validateUser };
