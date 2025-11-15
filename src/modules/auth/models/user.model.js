@@ -14,4 +14,10 @@ const User = sequelize.define("User", {
   scopes: { withPassword: { attributes: { include: ["password"] } } },
 });
 
+User.associate = (models) => {
+  User.hasMany(models.RefreshToken, { foreignKey: "userId", as: "refreshTokens", onDelete: "CASCADE" });
+  User.hasMany(models.Audio,        { foreignKey: "ownerId", as: "audios",         onDelete: "SET NULL" });
+  User.hasMany(models.UserLibrary,  { foreignKey: "userId",  as: "library",        onDelete: "CASCADE" });
+};
+
 module.exports = User;

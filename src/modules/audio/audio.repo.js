@@ -1,7 +1,6 @@
 const { v4: uuid } = require("uuid");
 const { Op } = require("sequelize");
-const Audio = require("./models/audio.model");
-const AudioVariant = require("./models/audioVariant.model")
+const {Audio,AudioVariant} = require("../../models");
 async function createAudio(data) {
   const id = uuid();
   const row = await Audio.create({ id, ...data });

@@ -1,7 +1,6 @@
 // src/modules/auth/auth.repo.js
 const { v4: uuid } = require("uuid");
-const User = require("./models/user.model");
-const RefreshToken = require("./models/refreshToken.model");
+const { User, RefreshToken } = require("../../models"); // 👈 del hub
 
 async function createUser({ email, password, name }) {
   const id = uuid();

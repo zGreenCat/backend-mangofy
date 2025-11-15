@@ -1,10 +1,9 @@
 const jwt = require("jsonwebtoken");
-
-const ACCESS_SECRET  = process.env.JWT_ACCESS_SECRET  || "dev_access";
-const REFRESH_SECRET = process.env.JWT_REFRESH_SECRET || "dev_refresh";
-const ACCESS_TTL     = process.env.ACCESS_TTL  || "15m";
-const REFRESH_TTL    = process.env.REFRESH_TTL || "30d";
-
+const { env } = require("./../../config/env");
+const ACCESS_SECRET  = env.JWT_ACCESS_SECRET  || "dev_access";
+const REFRESH_SECRET = env.JWT_REFRESH_SECRET || "dev_refresh";
+const ACCESS_TTL     = env.ACCESS_TTL  || "15m";
+const REFRESH_TTL    = env.REFRESH_TTL || "30d";
 function signAccess(userId) {
   return jwt.sign({ sub: userId }, ACCESS_SECRET, { expiresIn: ACCESS_TTL });
 }

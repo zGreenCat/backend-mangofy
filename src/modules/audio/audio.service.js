@@ -1,8 +1,9 @@
 const { cloudinary } = require("../../config/cloudinary");
 const repo = require("./audio.repo");
+const { env } = require("../../config/env");
 const { HttpError } = require("../../core/httpError");
 
-const UPLOAD_PRESET = "mangofy_audio_signed";
+const UPLOAD_PRESET = env.CLOUDINARY_UPLOAD_PRESET;
 
 async function list(params) {
   const q = params?.q || "";
@@ -12,19 +13,29 @@ async function list(params) {
 }
 
 async function signature() {
-  // devuelve lo necesario para el upload firmado
-  const timestamp = Math.floor(Date.now() / 1000);
-  const upload_preset = UPLOAD_PRESET; // firmado
-  const cloudName = process.env.CLOUDINARY_CLOUD_NAME;
-  const apiKey = process.env.CLOUDINARY_API_KEY;
-  const folder = "audios";
-  const { v2: cdn } = require("cloudinary");
-  const signature = cdn.utils.api_sign_request(
-    { timestamp, upload_preset, folder },
-    process.env.CLOUDINARY_API_SECRET
-  );
+  const cfg = cloudinary.config(); // ← misma instancia configurada
+  // Validaciones claras (si falta algo, no sigas):
+  if (!cfg.cloud_name || !cfg.api_key || !cfg.api_secret) {
+    throw new Error("CLOUDINARY config incompleta (cloud_name/api_key/api_secret)");
+  }
 
-  return { timestamp, signature, cloudName, apiKey, upload_preset,folder };
+  const timestamp = Math.floor(Date.now() / 1000);
+  const folder = "audios"; // si lo usas, debes firmarlo y luego enviarlo en el FormData
+  const upload_preset = UPLOAD_PRESET; // tu preset firmado
+
+  // Firma SOLO los campos que realmente enviarás en el FormData
+  const toSign = { timestamp, folder, upload_preset };
+  const signature = cloudinary.utils.api_sign_request(toSign, cfg.api_secret);
+
+  // Devuelve llaves planas con los NOMBRES que espera el front:
+  return {
+    cloudName: cfg.cloud_name,      // 👈 camelCase (tu front lee sig.cloudName)
+    apiKey: cfg.api_key,
+    timestamp,
+    signature,
+    upload_preset,
+    folder,
+  };
 }
 async function getPlayUrl(id, quality) {
   const audio = await repo.findAudioByIdWithVariants(id);

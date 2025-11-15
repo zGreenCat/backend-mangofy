@@ -1,6 +1,6 @@
 const { DataTypes } = require("sequelize");
 const { sequelize } = require("../../../config/db");
-const User = require("./user.model");
+
 
 const RefreshToken = sequelize.define("RefreshToken", {
   id: { type: DataTypes.STRING, primaryKey: true },
@@ -12,7 +12,8 @@ const RefreshToken = sequelize.define("RefreshToken", {
   timestamps: false
 });
 
-User.hasMany(RefreshToken, { foreignKey: "userId" });
-RefreshToken.belongsTo(User, { foreignKey: "userId" });
+RefreshToken.associate = (models) => {
+  RefreshToken.belongsTo(models.User, { foreignKey: "userId", as: "user", onDelete: "CASCADE" });
+};
 
 module.exports = RefreshToken;

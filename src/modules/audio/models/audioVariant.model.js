@@ -1,6 +1,6 @@
 const { DataTypes } = require("sequelize");
 const { sequelize } = require("../../../config/db");
-const Audio = require("./audio.model");
+
 
 const AudioVariant = sequelize.define("AudioVariant", {
   id: { type: DataTypes.STRING, primaryKey: true },
@@ -16,7 +16,10 @@ const AudioVariant = sequelize.define("AudioVariant", {
   timestamps: false
 });
 
-Audio.hasMany(AudioVariant, { foreignKey: "audio_id", as: "variants" });
-AudioVariant.belongsTo(Audio, { foreignKey: "audio_id" });
+
+AudioVariant.associate = (models) => {
+  AudioVariant.belongsTo(models.Audio, { foreignKey: "audioId", as: "audio", onDelete: "CASCADE" });
+};
+
 
 module.exports = AudioVariant;

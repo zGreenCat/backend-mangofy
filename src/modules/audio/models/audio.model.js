@@ -1,6 +1,6 @@
 const { DataTypes } = require("sequelize");
 const { sequelize } = require("../../../config/db");
-const User = require("../../auth/models/user.model"); // si quieres owner
+
 
 const Audio = sequelize.define("Audio", {
   id: { type: DataTypes.STRING, primaryKey: true },
@@ -17,9 +17,10 @@ const Audio = sequelize.define("Audio", {
   timestamps: true
 });
 
-if (User) {
-  User.hasMany(Audio, { foreignKey: "ownerId" });
-  Audio.belongsTo(User, { foreignKey: "ownerId" });
-}
+Audio.associate = (models) => {
+  Audio.belongsTo(models.User,         { foreignKey: "ownerId", as: "owner",       onDelete: "SET NULL" });
+  Audio.hasMany(models.AudioVariant,   { foreignKey: "audioId", as: "variants",    onDelete: "CASCADE" });
+  Audio.hasMany(models.UserLibrary,    { foreignKey: "audioId", as: "libraryRefs", onDelete: "CASCADE" });
+};
 
 module.exports = Audio;
