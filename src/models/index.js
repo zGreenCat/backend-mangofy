@@ -1,6 +1,6 @@
 const { sequelize } = require("../config/db");
 
-// Carga todos los modelos (definen atributos y .associate)
+
 require("../modules/auth/models/user.model");
 require("../modules/auth/models/refreshToken.model");
 require("../modules/audio/models/audio.model");
@@ -22,7 +22,7 @@ async function initModels({ sync = false, alter = false, force = false } = {}) {
   return sequelize.models;
 }
 
-// ⬇️ getters: siempre devuelven la clase Model real desde sequelize.models
+
 module.exports = {
   sequelize,
   initModels,

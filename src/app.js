@@ -1,4 +1,3 @@
-// src/app.js
 const express = require("express");
 const { errorMiddleware } = require("./core/errorMiddleware");
 const authRoutes = require("./modules/auth");
