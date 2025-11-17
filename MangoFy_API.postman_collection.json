@@ -1,0 +1,300 @@
+{
+  "info": {
+    "name": "MangoFy API",
+    "description": "Colección completa de endpoints para el backend de MangoFy (clon de Spotify)",
+    "schema": "https://schema.getpostman.com/json/collection/v2.1.0/collection.json"
+  },
+  "variable": [
+    {
+      "key": "baseUrl",
+      "value": "http://localhost:3001",
+      "type": "string"
+    },
+    {
+      "key": "accessToken",
+      "value": "",
+      "type": "string"
+    },
+    {
+      "key": "refreshToken",
+      "value": "",
+      "type": "string"
+    }
+  ],
+  "item": [
+    {
+      "name": "Auth",
+      "item": [
+        {
+          "name": "Register",
+          "request": {
+            "method": "POST",
+            "header": [
+              {
+                "key": "Content-Type",
+                "value": "application/json"
+              }
+            ],
+            "body": {
+              "mode": "raw",
+              "raw": "{\n  \"email\": \"test@example.com\",\n  \"password\": \"password123\",\n  \"name\": \"Test User\"\n}"
+            },
+            "url": {
+              "raw": "{{baseUrl}}/api/auth/register",
+              "host": ["{{baseUrl}}"],
+              "path": ["api", "auth", "register"]
+            }
+          },
+          "response": [],
+          "event": [
+            {
+              "listen": "test",
+              "script": {
+                "exec": [
+                  "if (pm.response.code === 200 || pm.response.code === 201) {",
+                  "    const json = pm.response.json();",
+                  "    if (json.accessToken) pm.collectionVariables.set('accessToken', json.accessToken);",
+                  "    if (json.refreshToken) pm.collectionVariables.set('refreshToken', json.refreshToken);",
+                  "}"
+                ],
+                "type": "text/javascript"
+              }
+            }
+          ]
+        },
+        {
+          "name": "Login",
+          "request": {
+            "method": "POST",
+            "header": [
+              {
+                "key": "Content-Type",
+                "value": "application/json"
+              }
+            ],
+            "body": {
+              "mode": "raw",
+              "raw": "{\n  \"email\": \"test@example.com\",\n  \"password\": \"password123\"\n}"
+            },
+            "url": {
+              "raw": "{{baseUrl}}/api/auth/login",
+              "host": ["{{baseUrl}}"],
+              "path": ["api", "auth", "login"]
+            }
+          },
+          "response": [],
+          "event": [
+            {
+              "listen": "test",
+              "script": {
+                "exec": [
+                  "if (pm.response.code === 200) {",
+                  "    const json = pm.response.json();",
+                  "    if (json.accessToken) pm.collectionVariables.set('accessToken', json.accessToken);",
+                  "    if (json.refreshToken) pm.collectionVariables.set('refreshToken', json.refreshToken);",
+                  "}"
+                ],
+                "type": "text/javascript"
+              }
+            }
+          ]
+        },
+        {
+          "name": "Get Me",
+          "request": {
+            "method": "GET",
+            "header": [
+              {
+                "key": "Authorization",
+                "value": "Bearer {{accessToken}}"
+              }
+            ],
+            "url": {
+              "raw": "{{baseUrl}}/api/auth/me",
+              "host": ["{{baseUrl}}"],
+              "path": ["api", "auth", "me"]
+            }
+          },
+          "response": []
+        }
+      ]
+    },
+    {
+      "name": "Audio",
+      "item": [
+        {
+          "name": "List Audios",
+          "request": {
+            "method": "GET",
+            "header": [
+              {
+                "key": "Authorization",
+                "value": "Bearer {{accessToken}}"
+              }
+            ],
+            "url": {
+              "raw": "{{baseUrl}}/api/audios",
+              "host": ["{{baseUrl}}"],
+              "path": ["api", "audios"]
+            }
+          },
+          "response": []
+        },
+        {
+          "name": "Get Upload Signature",
+          "request": {
+            "method": "GET",
+            "header": [
+              {
+                "key": "Authorization",
+                "value": "Bearer {{accessToken}}"
+              }
+            ],
+            "url": {
+              "raw": "{{baseUrl}}/api/audios/upload/signature",
+              "host": ["{{baseUrl}}"],
+              "path": ["api", "audios", "upload", "signature"]
+            },
+            "description": "Obtiene firma para subir directamente a Cloudinary desde el cliente"
+          },
+          "response": []
+        },
+        {
+          "name": "Create Audio (Upload from mobile)",
+          "request": {
+            "method": "POST",
+            "header": [
+              {
+                "key": "Authorization",
+                "value": "Bearer {{accessToken}}"
+              },
+              {
+                "key": "Content-Type",
+                "value": "application/json"
+              }
+            ],
+            "body": {
+              "mode": "raw",
+              "raw": "{\n  \"title\": \"My Song\",\n  \"artist\": \"Artist Name\",\n  \"publicId\": \"cloudinary_public_id\",\n  \"format\": \"mp3\",\n  \"durationSec\": 240,\n  \"bytes\": 5242880,\n  \"bitrateKbps\": 320,\n  \"visibility\": \"public\"\n}"
+            },
+            "url": {
+              "raw": "{{baseUrl}}/api/audios",
+              "host": ["{{baseUrl}}"],
+              "path": ["api", "audios"]
+            },
+            "description": "Crea registro de audio después de subir a Cloudinary. Body incluye metadatos devueltos por Cloudinary."
+          },
+          "response": []
+        },
+        {
+          "name": "Play Audio",
+          "request": {
+            "method": "GET",
+            "header": [
+              {
+                "key": "Authorization",
+                "value": "Bearer {{accessToken}}"
+              }
+            ],
+            "url": {
+              "raw": "{{baseUrl}}/api/audios/:id/play?quality=320k",
+              "host": ["{{baseUrl}}"],
+              "path": ["api", "audios", ":id", "play"],
+              "query": [
+                {
+                  "key": "quality",
+                  "value": "320k",
+                  "description": "Opcional: 128k, 320k, preview"
+                }
+              ],
+              "variable": [
+                {
+                  "key": "id",
+                  "value": "audio-uuid-here"
+                }
+              ]
+            },
+            "description": "Devuelve URL firmada (privado) o pública para reproducir el audio"
+          },
+          "response": []
+        }
+      ]
+    },
+    {
+      "name": "Library",
+      "item": [
+        {
+          "name": "List My Library",
+          "request": {
+            "method": "GET",
+            "header": [
+              {
+                "key": "Authorization",
+                "value": "Bearer {{accessToken}}"
+              }
+            ],
+            "url": {
+              "raw": "{{baseUrl}}/api/library",
+              "host": ["{{baseUrl}}"],
+              "path": ["api", "library"]
+            },
+            "description": "Lista todos los audios en la biblioteca del usuario autenticado"
+          },
+          "response": []
+        },
+        {
+          "name": "Add Audio to Library",
+          "request": {
+            "method": "POST",
+            "header": [
+              {
+                "key": "Authorization",
+                "value": "Bearer {{accessToken}}"
+              },
+              {
+                "key": "Content-Type",
+                "value": "application/json"
+              }
+            ],
+            "body": {
+              "mode": "raw",
+              "raw": "{\n  \"audioId\": \"audio-uuid-here\"\n}"
+            },
+            "url": {
+              "raw": "{{baseUrl}}/api/library",
+              "host": ["{{baseUrl}}"],
+              "path": ["api", "library"]
+            },
+            "description": "Añade un audio a la biblioteca del usuario"
+          },
+          "response": []
+        },
+        {
+          "name": "Remove Audio from Library",
+          "request": {
+            "method": "DELETE",
+            "header": [
+              {
+                "key": "Authorization",
+                "value": "Bearer {{accessToken}}"
+              }
+            ],
+            "url": {
+              "raw": "{{baseUrl}}/api/library/:audioId",
+              "host": ["{{baseUrl}}"],
+              "path": ["api", "library", ":audioId"],
+              "variable": [
+                {
+                  "key": "audioId",
+                  "value": "audio-uuid-here"
+                }
+              ]
+            },
+            "description": "Elimina un audio de la biblioteca del usuario"
+          },
+          "response": []
+        }
+      ]
+    }
+  ]
+}

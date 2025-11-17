@@ -29,7 +29,7 @@ async function signature() {
 
   // Devuelve llaves planas con los NOMBRES que espera el front:
   return {
-    cloudName: cfg.cloud_name,      // 👈 camelCase (tu front lee sig.cloudName)
+    cloudName: cfg.cloud_name,     
     apiKey: cfg.api_key,
     timestamp,
     signature,
