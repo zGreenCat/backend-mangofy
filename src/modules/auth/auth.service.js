@@ -3,6 +3,7 @@ const { HttpError } = require("../../core/httpError");
 const bcrypt = require("bcryptjs");   
 const tokens = require("./tokens");
 const { v4: uuid } = require("uuid");
+const { sendMail } = require("../../config/mailer");
 
 
 async function login(email, password) {
@@ -32,7 +33,42 @@ async function register({ email, password, name }) {
   const exists = await repo.findUserByEmail(email);
   if (exists) throw new HttpError(409, "EMAIL_IN_USE");
   const hash = await bcrypt.hash(password, 10);
-  return repo.createUser({ email, password: hash, name });
+  const user = await repo.createUser({ email, password: hash, name });
+
+  // generar código de verificación y enviarlo por correo
+  try {
+    const id = uuid();
+    const code = Math.floor(100000 + Math.random() * 900000).toString();
+    const expiresAt = new Date(Date.now() + 15 * 60 * 1000); // 15 minutos
+    await repo.createEmailVerification({ id, userId: user.id, code, expiresAt });
+    await sendMail({ to: email, subject: "Código de verificación", text: `Tu código es ${code}` });
+  } catch (e) {
+    // no impedir el registro si falla el envío de correo
+    console.error("Error sending verification email:", e);
+  }
+
+  return user;
+}
+
+async function sendVerificationCode(email) {
+  const user = await repo.findUserByEmail(email);
+  if (!user) throw new HttpError(404, "USER_NOT_FOUND");
+  const id = uuid();
+  const code = Math.floor(100000 + Math.random() * 900000).toString();
+  const expiresAt = new Date(Date.now() + 15 * 60 * 1000);
+  await repo.createEmailVerification({ id, userId: user.id, code, expiresAt });
+  await sendMail({ to: email, subject: "Código de verificación", text: `Tu código es ${code}` });
+  return { ok: true };
+}
+
+async function verifyCode(email, code) {
+  const user = await repo.findUserByEmail(email);
+  if (!user) throw new HttpError(404, "USER_NOT_FOUND");
+  const row = await repo.findEmailVerificationByCode(user.id, code);
+  if (!row) throw new HttpError(400, "INVALID_CODE");
+  if (new Date(row.expiresAt) < new Date()) throw new HttpError(400, "CODE_EXPIRED");
+  await repo.markEmailVerificationUsed(row.id);
+  return { ok: true };
 }
 
 async function validateUser(email, password) {
@@ -45,4 +81,4 @@ async function validateUser(email, password) {
 }
   
 
-module.exports = { login, register, validateUser };
+module.exports = { login, register, validateUser, sendVerificationCode, verifyCode };

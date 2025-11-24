@@ -21,6 +21,22 @@ async function me(_req, res, next) {
   } catch (e) { next(e); }
 }
 
+async function sendCode(req, res, next) {
+  try {
+    const { email } = req.body;
+    const out = await svc.sendVerificationCode(email);
+    res.json(out);
+  } catch (e) { next(e); }
+}
+
+async function verifyCode(req, res, next) {
+  try {
+    const { email, code } = req.body;
+    const out = await svc.verifyCode(email, code);
+    res.json(out);
+  } catch (e) { next(e); }
+}
+
 async function refresh(req, res, next) {
   try {
     const { refreshToken } = req.body;
@@ -46,4 +62,4 @@ async function logout(req, res, next) {
   } catch (e) { next(e); }
 }
 
-module.exports = { login, register, me, refresh, logout };
+module.exports = { login, register, me, refresh, logout, sendCode, verifyCode };

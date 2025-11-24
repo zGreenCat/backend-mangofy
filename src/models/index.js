@@ -1,8 +1,8 @@
 const { sequelize } = require("../config/db");
 
-
 require("../modules/auth/models/user.model");
 require("../modules/auth/models/refreshToken.model");
+require("../modules/auth/models/emailVerification.model");
 require("../modules/audio/models/audio.model");
 require("../modules/audio/models/audioVariant.model");
 require("../modules/library/models/userLibrary.model");
@@ -29,6 +29,7 @@ module.exports = {
   get models() { return sequelize.models; },
   get User() { return sequelize.models.User; },
   get RefreshToken() { return sequelize.models.RefreshToken; },
+  get EmailVerification() { return sequelize.models.EmailVerification; },
   get Audio() { return sequelize.models.Audio; },
   get AudioVariant() { return sequelize.models.AudioVariant; },
   get UserLibrary() { return sequelize.models.UserLibrary; },

@@ -1,6 +1,6 @@
 
 const { v4: uuid } = require("uuid");
-const { User, RefreshToken } = require("../../models"); 
+const { User, RefreshToken, EmailVerification } = require("../../models"); 
 
 async function createUser({ email, password, name }) {
   const id = uuid();
@@ -38,4 +38,18 @@ async function isRefreshValid(id, userId) {
   return !!row && !row.revoked && row.userId === userId;
 }
 
-module.exports = { createUser, findUserByEmail, findUserById, createRefreshToken, revokeRefreshToken, isRefreshValid };
+async function createEmailVerification({ id, userId, code, expiresAt }) {
+  await EmailVerification.create({ id, userId, code, expiresAt, used: false });
+}
+
+async function findEmailVerificationByCode(userId, code) {
+  const row = await EmailVerification.findOne({ where: { userId, code, used: false } });
+  return row ? row.get({ plain: true }) : null;
+}
+
+async function markEmailVerificationUsed(id) {
+  await EmailVerification.update({ used: true }, { where: { id } });
+}
+
+
+module.exports = { createUser, findUserByEmail, findUserById, createRefreshToken, revokeRefreshToken, isRefreshValid, createEmailVerification, findEmailVerificationByCode, markEmailVerificationUsed };
